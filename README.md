@@ -36,11 +36,11 @@ In [2]: mock_cluster = cluster.Cluster(contact_points=['127.0.0.1'],
 In [3]: mock_session = mock_cluster.connect('mykeyspace')
 
 In [4]: query = '''CREATE TABLE vaults(
-   ...:    ...:   projectid TEXT,
-   ...:    ...:   vaultid TEXT,
-   ...:    ...:   mycoolnumber TEXT,
-   ...:    ...:   PRIMARY KEY(projectid)
-   ...:    ...: );'''
+    ...:   projectid TEXT,
+    ...:   vaultid TEXT,
+    ...:   mycoolnumber TEXT,
+    ...:   PRIMARY KEY(projectid)
+    ...: );'''
 
 In [5]: mock_session.execute(query, '')
 Out[5]: []
@@ -48,10 +48,10 @@ Out[5]: []
 In [6]: mock_session.mappings
 Out[6]: {'VAULTS': {'primary': ['PROJECTID'], 'index': None}}
 
-In [7]: CQL_CREATE_VAULT = '''
-   ...:    ...:     INSERT INTO vaults (projectid, vaultid, mycoolnumber)
-   ...:    ...:     VALUES (%(projectid)s, %(vaultid)s, %(mycoolnumber)s)
-   ...:    ...: '''
+ In [7]: CQL_CREATE_VAULT = '''
+    ...:     INSERT INTO vaults (projectid, vaultid, mycoolnumber)
+    ...:     VALUES (%(projectid)s, %(vaultid)s, %(mycoolnumber)s)
+    ...: '''
 
 In [8]: query_args = {'PROJECTID':'56', 'VAULTID':'67', 'MYCOOLNUMBER': '8'}
 

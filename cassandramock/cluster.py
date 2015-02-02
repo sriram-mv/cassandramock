@@ -63,6 +63,9 @@ class Session(object):
                 if isinstance(v, uuid.UUID):
                     queryargs[k] = str(v)
 
+        if "JOIN" in query.strip():
+            raise InvalidRequest("Cassandra doesn't support JOINS")
+
         if query.strip().startswith("INSERT"):
             # It's all upserts in Cassandra
             query = query.replace("INSERT", "INSERT OR REPLACE")
@@ -110,10 +113,16 @@ class Session(object):
             index_count = 0
             index_keys_present = False
             where_clause_present = query.rfind('WHERE')
+
             if where_clause_present == -1:
-                pass
+
+                 if ',' in query.rsplit('FROM')[1].strip():
+                     raise InvalidRequest("Cassandra doesn't support JOINS")
             else:
                 table_name = query.rsplit('FROM')[1].rsplit("WHERE")[0].strip()
+
+                if ',' in table_name:
+                    raise InvalidRequest("Cassandra doesn't support JOINS")
 
                 query_builder =  query.strip().rsplit("WHERE")[1].split()
 
