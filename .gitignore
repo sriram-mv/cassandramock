@@ -44,11 +44,18 @@ coverage.xml
 *.mo
 *.pot
 
+# Vim stuff
+*.swp
+
 # Django stuff:
 *.log
 
 # Sphinx documentation
 docs/_build/
+
+# Pycharm
+
+.idea/
 
 # PyBuilder
 target/
