@@ -78,4 +78,34 @@ Out[14]: []
 In [15]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
 Out[15]: [('56',)]
 
+In [16]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
+---------------------------------------------------------------------------
+Exception                                 Traceback (most recent call last)
+<ipython-input-17-fb2ba0d8dea9> in <module>()
+----> 1 mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
+
+/Users/srir6369/cassandramock/cassandramock/cluster.py in execute(self, query, queryargs)
+    140                     else:
+    141                         if len(query_builder) > prim_count:
+--> 142                             raise Exception('Non primary key present in where clause')
+    143                 else:
+    144                     if prim_count == 0:
+
+Exception: Non primary key present in where clause
+
+In [17]: mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
+---------------------------------------------------------------------------
+Exception                                 Traceback (most recent call last)
+<ipython-input-18-0985407572c2> in <module>()
+----> 1 mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
+
+/Users/srir6369/cassandramock/cassandramock/cluster.py in execute(self, query, queryargs)
+    145                         pass
+    146                     else:
+--> 147                         raise Exception('Query will require explicit filtering')
+    148
+    149
+
+Exception: Query will require explicit filtering
+
 ```
