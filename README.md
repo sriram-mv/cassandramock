@@ -29,30 +29,30 @@ The Examples below show following cases
 
 In [1]: from cassandramock import cluster
 
-In [2]: mock_cluster = cluster.Cluster(contact_points=['127.0.0.1'], 
-                                       auth_provider=None,
-                                       ssl_options=False)
+In [2]: mock_cluster = cluster.Cluster(contact_points=['127.0.0.1'],
+   ...:                                        auth_provider=None,
+   ...:                                        ssl_options=False)
 
 In [3]: mock_session = mock_cluster.connect('mykeyspace')
 
 In [4]: query = '''CREATE TABLE vaults(
-   ...:   projectid TEXT,
-   ...:   vaultid TEXT,
-   ...:   mycoolnumber TEXT,
-   ...:   PRIMARY KEY(projectid)
-   ...: );'''
+   ...:    ...:   projectid TEXT,
+   ...:    ...:   vaultid TEXT,
+   ...:    ...:   mycoolnumber TEXT,
+   ...:    ...:   PRIMARY KEY(projectid)
+   ...:    ...: );'''
 
 In [5]: mock_session.execute(query, '')
 Out[5]: []
 
 In [6]: mock_session.mappings
-Out[6]: {'VAULTS': {'index': None, 'primary': ['PROJECTID']}}
+Out[6]: {'VAULTS': {'primary': ['PROJECTID'], 'index': None}}
 
 In [7]: CQL_CREATE_VAULT = '''
-   ...:     INSERT INTO vaults (projectid, vaultid, mycoolnumber)
-   ...:     VALUES (%(projectid)s, %(vaultid)s, %(mycoolnumber)s)
-   ...: '''
-   
+   ...:    ...:     INSERT INTO vaults (projectid, vaultid, mycoolnumber)
+   ...:    ...:     VALUES (%(projectid)s, %(vaultid)s, %(mycoolnumber)s)
+   ...:    ...: '''
+
 In [8]: query_args = {'PROJECTID':'56', 'VAULTID':'67', 'MYCOOLNUMBER': '8'}
 
 In [9]: mock_session.execute(CQL_CREATE_VAULT, query_args)
@@ -74,18 +74,18 @@ Out[14]: [('56',)]
 
 In [15]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
 ---------------------------------------------------------------------------
-Exception                                 Traceback (most recent call last)
-<ipython-input-14-ae3ff7653c0a> in <module>()
+InvalidRequest                            Traceback (most recent call last)
+<ipython-input-15-ae3ff7653c0a> in <module>()
 ----> 1 mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
 
 /Users/srir6369/cassandramock/cassandramock/cluster.py in execute(self, query, queryargs)
-    137                     missed_prim_keys = set(self.mappings[table_name]['primary']) - set(prim_keys_present)
-    138                     if missed_prim_keys != set():
---> 139                         raise Exception('Primary key(s): {0} are missing from where clause'.format(missed_prim_keys))
-    140                     else:
-    141                         if len(query_builder) > prim_count:
+    140                     missed_prim_keys = set(self.mappings[table_name]['primary']) - set(prim_keys_present)
+    141                     if missed_prim_keys != set():
+--> 142                         raise InvalidRequest('Primary key(s): {0} are missing from where clause'.format(missed_prim_keys))
+    143                     else:
+    144                         if len(query_builder) > prim_count:
 
-Exception: Primary key(s): {'PROJECTID'} are missing from where clause
+InvalidRequest: Primary key(s): {'PROJECTID'} are missing from where clause
 
 In [16]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3', '')
 Out[16]: [('67',)]
@@ -98,32 +98,32 @@ Out[18]: [('56',)]
 
 In [19]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
 ---------------------------------------------------------------------------
-Exception                                 Traceback (most recent call last)
-<ipython-input-17-fb2ba0d8dea9> in <module>()
+InvalidRequest                            Traceback (most recent call last)
+<ipython-input-19-fb2ba0d8dea9> in <module>()
 ----> 1 mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
 
 /Users/srir6369/cassandramock/cassandramock/cluster.py in execute(self, query, queryargs)
-    140                     else:
-    141                         if len(query_builder) > prim_count:
---> 142                             raise Exception('Non primary key present in where clause')
-    143                 else:
-    144                     if prim_count == 0:
+    143                     else:
+    144                         if len(query_builder) > prim_count:
+--> 145                             raise InvalidRequest('Non primary key present in where clause')
+    146                 else:
+    147                     if prim_count == 0:
 
-Exception: Non primary key present in where clause
+InvalidRequest: Non primary key present in where clause
 
 In [20]: mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
 ---------------------------------------------------------------------------
-Exception                                 Traceback (most recent call last)
-<ipython-input-18-0985407572c2> in <module>()
+InvalidRequest                            Traceback (most recent call last)
+<ipython-input-20-0985407572c2> in <module>()
 ----> 1 mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
 
 /Users/srir6369/cassandramock/cassandramock/cluster.py in execute(self, query, queryargs)
-    145                         pass
-    146                     else:
---> 147                         raise Exception('Query will require explicit filtering')
-    148
-    149
+    148                         pass
+    149                     else:
+--> 150                         raise InvalidRequest('Query will require explicit filtering')
+    151
+    152
 
-Exception: Query will require explicit filtering
+InvalidRequest: Query will require explicit filtering
 
 ```

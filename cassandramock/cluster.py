@@ -1,6 +1,9 @@
 import sqlite3
 import uuid
 
+from cassandra import InvalidRequest
+
+
 class Future(object):
 
     def __init__(self, result):
@@ -136,15 +139,15 @@ class Session(object):
                 if not index_keys_present:
                     missed_prim_keys = set(self.mappings[table_name]['primary']) - set(prim_keys_present)
                     if missed_prim_keys != set():
-                        raise Exception('Primary key(s): {0} are missing from where clause'.format(missed_prim_keys))
+                        raise InvalidRequest('Primary key(s): {0} are missing from where clause'.format(missed_prim_keys))
                     else:
                         if len(query_builder) > prim_count:
-                            raise Exception('Non primary key present in where clause')
+                            raise InvalidRequest('Non primary key present in where clause')
                 else:
                     if prim_count == 0:
                         pass
                     else:
-                        raise Exception('Query will require explicit filtering')
+                        raise InvalidRequest('Query will require explicit filtering')
 
 
         res = self.conn.execute(query, queryargs)
