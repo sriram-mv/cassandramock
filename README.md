@@ -15,6 +15,16 @@ pip install -e .
 Example
 -------
 
+The Examples below show following cases
+
+```bash
+ * Everything is Upserts
+ * where clause with primary key not present
+ * where clause with an index key
+ * where clause with an index key and a primary key
+```
+
+
 ```python
 
 In [1]: from cassandramock import cluster
@@ -51,10 +61,18 @@ Out[9]: []
 In [10]: mock_session.execute('SELECT * FROM VAULTS', '')
 Out[10]: [('56', '67', '8')]
 
-In [11]: mock_session.execute('SELECT PROJECTID FROM VAULTS', '')
-Out[11]: [('56',)]
+In [11]: query_args = {'PROJECTID':'56', 'VAULTID':'67', 'MYCOOLNUMBER': '9'}
 
-In [12]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
+In [12]: mock_session.execute(CQL_CREATE_VAULT, query_args)
+Out[12]: []
+
+In [13]: mock_session.execute('SELECT * FROM VAULTS', '')
+Out[13]: [('56', '67', '9')]
+
+In [14]: mock_session.execute('SELECT PROJECTID FROM VAULTS', '')
+Out[14]: [('56',)]
+
+In [15]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
 ---------------------------------------------------------------------------
 Exception                                 Traceback (most recent call last)
 <ipython-input-14-ae3ff7653c0a> in <module>()
@@ -69,16 +87,16 @@ Exception                                 Traceback (most recent call last)
 
 Exception: Primary key(s): {'PROJECTID'} are missing from where clause
 
-In [13]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3', '')
-Out[13]: [('67',)]
+In [16]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3', '')
+Out[16]: [('67',)]
 
-In [14]: mock_session.execute('CREATE INDEX VAULTID_INDEX ON VAULTS (VAULTID)','')
-Out[14]: []
+In [17]: mock_session.execute('CREATE INDEX VAULTID_INDEX ON VAULTS (VAULTID)','')
+Out[17]: []
 
-In [15]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
-Out[15]: [('56',)]
+In [18]: mock_session.execute('SELECT PROJECTID FROM VAULTS WHERE VAULTID>=3', '')
+Out[18]: [('56',)]
 
-In [16]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
+In [19]: mock_session.execute('SELECT VAULTID FROM VAULTS WHERE PROJECTID>=3 AND MYCOOLNUMBER>=1', '')
 ---------------------------------------------------------------------------
 Exception                                 Traceback (most recent call last)
 <ipython-input-17-fb2ba0d8dea9> in <module>()
@@ -93,7 +111,7 @@ Exception                                 Traceback (most recent call last)
 
 Exception: Non primary key present in where clause
 
-In [17]: mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
+In [20]: mock_session.execute('SELECT MYCOOLNUMBER FROM VAULTS WHERE PROJECTID>=3 AND VAULTID>=1', '')
 ---------------------------------------------------------------------------
 Exception                                 Traceback (most recent call last)
 <ipython-input-18-0985407572c2> in <module>()
