@@ -36,8 +36,8 @@ class Session(object):
         original_query = query
         res = None
         query = query.upper()
-        query = query.replace('false', '0')
-        query = query.replace('true', '1')
+        query = query.replace('FALSE', '0')
+        query = query.replace('TRUE', '1')
 
         if isinstance(queryargs, tuple):
 
