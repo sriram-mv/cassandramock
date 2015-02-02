@@ -48,7 +48,7 @@ Out[5]: []
 In [6]: mock_session.mappings
 Out[6]: {'VAULTS': {'primary': ['PROJECTID'], 'index': None}}
 
- In [7]: CQL_CREATE_VAULT = '''
+In [7]: CQL_CREATE_VAULT = '''
     ...:     INSERT INTO vaults (projectid, vaultid, mycoolnumber)
     ...:     VALUES (%(projectid)s, %(vaultid)s, %(mycoolnumber)s)
     ...: '''
