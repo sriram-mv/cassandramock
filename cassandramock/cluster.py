@@ -1,8 +1,9 @@
 import sqlite3
 import uuid
+import re
 
 from cassandra import InvalidRequest
-
+from .statements import PreparedStatement
 
 class Future(object):
 
@@ -27,9 +28,19 @@ class Session(object):
         self.keyspace = keyspace
         self.mappings = {}
         self.tokens = ['AND', 'OR']
-
-    def execute(self, query, queryargs):
+        # regex to find the db.table_name
+        self.insert_stmt_regex = re.compile('^INSERT INTO (?P<dbname>(\w+\.)?\w+)*', re.I)
+        self.create_stmt_regex = re.compile('^CREATE TABLE (?P<dbname>(\w+\.)?\w+)*', re.I)
+        #self.select_stmt_regex = re.COMPILE
+        
+    def execute(self, query, queryargs=None):
         # Health check.
+        is_query_prepared = False
+        if isinstance(query, PreparedStatement) and queryargs:
+            query = query.bind(queryargs)
+            queryargs = None
+            is_query_prepared = True
+            
         if 'system.local' in query:
             return 'true'
 
@@ -39,7 +50,7 @@ class Session(object):
         query = query.replace('FALSE', '0')
         query = query.replace('TRUE', '1')
 
-        if isinstance(queryargs, tuple):
+        if isinstance(queryargs, tuple) and not is_query_prepared:
 
             # convert UUID to string
             queryargs = tuple([str(s) if isinstance(s, uuid.UUID)
@@ -63,15 +74,30 @@ class Session(object):
                 if isinstance(v, uuid.UUID):
                     queryargs[k] = str(v)
 
+        elif queryargs == None:
+            pass
+
         if "JOIN" in query.strip():
             raise InvalidRequest("Cassandra doesn't support JOINS")
 
         if query.strip().startswith("INSERT"):
             # It's all upserts in Cassandra
+            k = re.match(self.insert_stmt_regex, query)
+            if k:
+                dbname = k.group('dbname')
+                if '.' in dbname:
+                    keyspace, table = dbname.split('.')
+                    query = query.replace(dbname, table)
             query = query.replace("INSERT", "INSERT OR REPLACE")
 
         if query.strip().startswith("CREATE TABLE"):
             # create a mapping of table_name and associated primary key
+            k = re.match(self.create_stmt_regex, query)
+            if k:
+                dbname = k.group('dbname')
+                if '.' in dbname:
+                    keyspace, table = dbname.split('.')
+                    query = query.replace(dbname, table)
             cluster_key = False
             table_name = query.split()[2][:-1]
             self.mappings[table_name] = {}
@@ -158,12 +184,19 @@ class Session(object):
                     else:
                         raise InvalidRequest('Query will require explicit filtering')
 
-
-        res = self.conn.execute(query, queryargs)
+        res = {}
+        
+        if not queryargs:
+            res = self.conn.execute(query)
+        else:
+            res = self.conn.execute(query, queryargs)
         res = list(res)
 
         return res
 
+
+    def prepare(self, query, custom_payload=None):
+        return PreparedStatement(query)
 
     def execute_async(self, query, queryargs):
 
@@ -173,7 +206,7 @@ class Session(object):
 
 class Cluster(object):
 
-    def __init__(self, contact_points, auth_provider, ssl_options):
+    def __init__(self, contact_points=None, auth_provider=None, ssl_options=None):
         self.cluster_contact_points = contact_points
 
     @property
