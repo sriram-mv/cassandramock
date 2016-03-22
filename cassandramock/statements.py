@@ -14,7 +14,7 @@ class PreparedStatement(Statement):
         """
         self.statement = query
         self.py_format = query.replace('?', "{}")
-        print "in ps", self.py_format
+
     def bind(self, vals_tuple):
         tup = []
         for term in vals_tuple:
